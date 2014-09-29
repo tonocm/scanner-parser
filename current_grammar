@@ -1,0 +1,201 @@
+compilation_unit
+    --> package_opt imports type_definitions
+
+package_opt
+    --> PACKAGE qualified_name SEMIC
+    -->
+
+imports
+    --> IMPORT expr SEMIC imports
+    -->
+
+type_definitions
+    --> modifiers class_definition type_definitions
+    --> SEMIC type_definitions
+    -->
+
+modifiers
+    --> MODIFIER modifiers
+    --> SYNCHRONIZED modifiers
+    -->
+
+brackets_opt
+    --> LBRAC RBRAC brackets_opt
+    -->
+
+qualified_name
+    --> IDENT qualified_name_tail
+
+qualified_name_tail
+    --> DOT IDENT qualified_name_tail
+    -->
+
+qualified_name_list
+    --> qualified_name more_qualified_names
+
+more_qualified_names
+    --> COMMA qualified_name_list
+    -->
+
+class_definition
+    --> CLASSWORD IDENT extends_clause implements_clause LBRACE fields RBRACE
+
+extends_clause
+    --> EXTENDS qualified_name_list
+    -->
+
+implements_clause
+    --> IMPLEMENTS qualified_name_list
+    -->
+
+throws_clause
+    --> THROWS qualified_name_list
+    -->
+
+fields
+    --> field fields
+    -->
+
+field
+    --> modifiers field_tail
+    --> SEMIC
+
+field_tail
+    --> qualified_name qn_field_tail
+    --> TYPE type_field_tail
+    --> compound_stmt                   -- static initializer
+
+qn_field_tail
+    --> type_field_tail
+    --> routine_tail                    -- constructor
+
+type_field_tail
+    --> brackets_opt IDENT name_field_tail
+
+name_field_tail
+    --> var_decs_tail SEMIC
+    --> routine_tail                    -- non-constructor method
+
+routine_tail
+    --> LPAREN params_opt RPAREN brackets_opt throws_clause routine_body_opt
+
+routine_body_opt
+    --> compound_stmt
+    --> SEMIC
+
+params_opt
+    --> param more_params
+    -->
+
+more_params
+    --> COMMA param more_params
+    -->
+
+param
+    --> type brackets_opt IDENT brackets_opt
+
+var_decs
+    --> IDENT var_decs_tail
+
+var_decs_tail
+    --> brackets_opt eq_initializer_opt more_var_decs
+
+eq_initializer_opt
+    --> EQUALS initializer
+    -->
+
+more_var_decs
+    --> COMMA var_decs
+    -->
+
+initializer
+    --> expr
+    --> LBRACE initializer_list_opt RBRACE
+
+initializer_list_opt
+    --> initializer more_initializers
+    -->
+
+more_initializers
+    --> COMMA initializer more_initializers
+    -->
+
+type
+    --> qualified_name
+    --> TYPE
+
+compound_stmt
+    --> LBRACE balanced_stuff RBRACE
+
+balanced_stuff --> stuff balanced_stuff
+    --> LBRACE balanced_stuff RBRACE balanced_stuff
+    -->
+
+stuff --> IDENT
+    --> OPERATOR
+    --> KWOPERATOR
+    --> LBRAC
+    --> RBRAC
+    --> LPAREN
+    --> RPAREN
+    --> EQUALS
+    --> COLON
+    --> QMARK
+    --> SEMIC
+    --> COMMA
+    --> DOT
+    --> STAR
+    --> MODIFIER
+    --> LITERAL
+    --> TYPE
+    --> ATOMWORD
+    --> CLASSWORD
+    --> BREAK         
+    --> CASE          
+    --> CATCH         
+    --> CONTINUE      
+    --> DEFAULT       
+    --> DO            
+    --> ELSE          
+    --> FINALLY       
+    --> FOR           
+    --> GOTO          
+    --> IF            
+    --> RETURN        
+    --> SWITCH        
+    --> SYNCHRONIZED  
+    --> THROW         
+    --> TRY           
+    --> WHILE          
+
+expr_list
+    --> expr more_exprs
+
+more_exprs
+    --> COMMA expr_list
+    -->
+
+expr_list_opt
+    --> expr_list
+    -->
+
+expr_opt
+    --> expr
+    -->
+
+expr
+    --> atom expr_opt
+
+atom
+    --> IDENT
+    --> DOT
+    --> TYPE
+    --> LBRAC expr_opt RBRAC
+    --> LITERAL
+    --> OPERATOR
+    --> KWOPERATOR
+    --> EQUALS
+    --> STAR
+    --> QMARK expr COLON
+    --> LPAREN expr_list_opt RPAREN
+    --> ATOMWORD

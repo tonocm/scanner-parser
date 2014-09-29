@@ -1,0 +1,257 @@
+compilation_unit
+    --> package_opt imports type_definitions
+
+package_opt
+    --> PACKAGE qualified_name SEMIC
+    -->
+
+imports
+    --> IMPORT expr SEMIC imports
+    -->
+
+type_definitions
+    --> modifiers class_definition type_definitions
+    --> SEMIC type_definitions
+    -->
+
+modifiers
+    --> MODIFIER modifiers
+    --> SYNCHRONIZED modifiers
+    -->
+
+brackets_opt
+    --> LBRAC RBRAC brackets_opt
+    -->
+
+qualified_name
+    --> IDENT qualified_name_tail
+
+qualified_name_tail
+    --> DOT IDENT qualified_name_tail
+    -->
+
+qualified_name_list
+    --> qualified_name more_qualified_names
+
+more_qualified_names
+    --> COMMA qualified_name_list
+    -->
+
+class_definition
+    --> CLASSWORD IDENT extends_clause implements_clause LBRACE fields RBRACE
+
+extends_clause
+    --> EXTENDS qualified_name_list
+    -->
+
+implements_clause
+    --> IMPLEMENTS qualified_name_list
+    -->
+
+throws_clause
+    --> THROWS qualified_name_list
+    -->
+
+fields
+    --> field fields
+    -->
+
+field
+    --> modifiers field_tail
+    --> SEMIC
+
+field_tail
+    --> qualified_name qn_field_tail
+    --> TYPE type_field_tail
+    --> compound_stmt                   -- static initializer
+
+qn_field_tail
+    --> type_field_tail
+    --> routine_tail                    -- constructor
+
+type_field_tail
+    --> brackets_opt IDENT name_field_tail
+
+name_field_tail
+    --> var_decs_tail SEMIC
+    --> routine_tail                    -- non-constructor method
+
+routine_tail
+    --> LPAREN params_opt RPAREN brackets_opt throws_clause routine_body_opt
+
+routine_body_opt
+    --> compound_stmt
+    --> SEMIC
+
+params_opt
+    --> param more_params
+    -->
+
+more_params
+    --> COMMA param more_params
+    -->
+
+param
+    --> type brackets_opt IDENT brackets_opt
+
+var_decs
+    --> IDENT var_decs_tail
+
+var_decs_tail
+    --> brackets_opt eq_initializer_opt more_var_decs
+
+eq_initializer_opt
+    --> EQUALS initializer
+    -->
+
+more_var_decs
+    --> COMMA var_decs
+    -->
+
+initializer
+    --> expr
+    --> LBRACE initializer_list_opt RBRACE
+
+initializer_list_opt
+    --> initializer more_initializers
+    -->
+
+more_initializers
+    --> COMMA initializer more_initializers
+    -->
+
+type
+    --> qualified_name
+    --> TYPE
+
+stmt
+    --> plain_stmt
+    --> compound_stmt
+    --> if_stmt
+    --> for_stmt
+    --> switch_stmt
+    --> try_block
+    --> WHILE LPAREN expr RPAREN stmt
+    --> DO stmt WHILE LPAREN expr RPAREN SEMIC
+    --> BREAK ident_opt SEMIC
+    --> CONTINUE ident_opt SEMIC
+    --> RETURN expr_opt SEMIC
+    --> THROW expr SEMIC
+    --> GOTO IDENT SEMIC
+    --> SYNCHRONIZED LPAREN expr RPAREN compound_stmt
+    --> SEMIC
+
+plain_stmt
+    --> qualified_name qn_stmt_tail
+    --> non_name_expr SEMIC
+    --> TYPE brackets_opt var_decs SEMIC
+
+-- distinguishing between a statement and a local variable definition is
+-- tricky: consider that after having seen "t[" you don't know if it's
+-- an assignment to an array "t[3]=4;" or an variable def "t[] b;"
+qn_stmt_tail
+    --> COLON stmt                              -- labeled statement
+    --> LBRAC qn_lb_stmt_tail SEMIC
+    --> var_decs SEMIC                          -- local variable(s)
+    --> name_expr_tail SEMIC                    -- assignment, etc.
+
+qn_lb_stmt_tail
+    --> RBRAC brackets_opt var_decs             -- local variable(s)
+    --> expr RBRAC expr_opt                     -- assignment, etc.
+
+compound_stmt
+    --> LBRACE stmt_list_opt RBRACE
+
+stmt_list_opt
+    --> stmt stmt_list_opt
+    -->
+
+if_stmt
+    --> IF LPAREN expr RPAREN stmt else_opt
+
+-- the else_opt productions have a prediction conflict;
+-- we resolve in favor of the first production.
+else_opt
+    --> ELSE stmt
+    -->
+
+for_stmt
+    --> FOR LPAREN for_init SEMIC expr_opt SEMIC expr_list_opt RPAREN stmt
+
+for_init
+    --> qualified_name qn_for_init_tail
+    --> TYPE brackets_opt var_decs
+    -->
+
+qn_for_init_tail
+    --> LBRAC qn_lb_for_init_tail
+    --> name_expr_tail more_exprs
+    --> var_decs
+
+qn_lb_for_init_tail
+    --> RBRAC brackets_opt var_decs
+    --> expr RBRAC expr_opt more_exprs
+
+switch_stmt
+    --> SWITCH LPAREN expr RPAREN LBRACE arm_list_opt RBRACE
+
+arm_list_opt
+    --> arm arm_list_opt
+    -->
+
+arm --> CASE expr COLON stmt_list_opt
+    --> DEFAULT COLON stmt_list_opt
+
+try_block
+    --> TRY compound_stmt catches
+
+catches
+    --> CATCH LPAREN param RPAREN compound_stmt catches
+    --> FINALLY compound_stmt
+    -->
+
+ident_opt
+    --> IDENT
+    -->
+
+expr_list
+    --> expr more_exprs
+
+more_exprs
+    --> COMMA expr_list
+    -->
+
+expr_list_opt
+    --> expr_list
+    -->
+
+expr_opt
+    --> expr
+    -->
+
+expr
+    --> atom expr_opt
+
+name_expr_tail
+    --> non_name_atom expr_opt
+    -->
+
+non_name_expr
+    --> non_name_atom expr_opt
+
+non_name_atom
+    --> LITERAL
+    --> OPERATOR
+    --> KWOPERATOR
+    --> EQUALS
+    --> STAR
+    --> QMARK expr COLON
+    --> LPAREN expr_list_opt RPAREN
+    --> ATOMWORD
+
+atom
+    --> IDENT
+    --> DOT
+    --> TYPE
+    --> LBRAC expr_opt RBRAC
+    --> non_name_atom

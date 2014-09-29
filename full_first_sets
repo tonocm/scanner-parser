@@ -1,0 +1,87 @@
+compilation_unit     : {SEMIC, MODIFIER, CLASSWORD, IMPORT, PACKAGE,
+                        SYNCHRONIZED, EOF}
+package_opt          : {PACKAGE}
+imports              : {IMPORT}
+type_definitions     : {SEMIC, MODIFIER, CLASSWORD, SYNCHRONIZED}
+qualified_name       : {IDENT}
+expr                 : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN, EQUALS,
+                        QMARK, DOT, STAR, LITERAL, TYPE, ATOMWORD}
+modifiers            : {MODIFIER, SYNCHRONIZED}
+class_definition     : {CLASSWORD}
+brackets_opt         : {LBRAC}
+qualified_name_tail  : {DOT}
+qualified_name_list  : {IDENT}
+more_qualified_names : {COMMA}
+extends_clause       : {EXTENDS}
+implements_clause    : {IMPLEMENTS}
+fields               : {IDENT, LBRACE, SEMIC, MODIFIER, TYPE, SYNCHRONIZED}
+throws_clause        : {THROWS}
+field                : {IDENT, LBRACE, SEMIC, MODIFIER, TYPE, SYNCHRONIZED}
+field_tail           : {IDENT, LBRACE, TYPE}
+qn_field_tail        : {IDENT, LBRAC, LPAREN}
+type_field_tail      : {IDENT, LBRAC}
+compound_stmt        : {LBRACE}
+routine_tail         : {LPAREN}
+name_field_tail      : {LBRAC, LPAREN, EQUALS, SEMIC, COMMA}
+var_decs_tail        : {LBRAC, EQUALS, COMMA}
+params_opt           : {IDENT, TYPE}
+routine_body_opt     : {LBRACE, SEMIC}
+param                : {IDENT, TYPE}
+more_params          : {COMMA}
+type                 : {IDENT, TYPE}
+var_decs             : {IDENT}
+eq_initializer_opt   : {EQUALS}
+more_var_decs        : {COMMA}
+initializer          : {IDENT, OPERATOR, KWOPERATOR, LBRACE, LBRAC,
+                        LPAREN, EQUALS, QMARK, DOT, STAR, LITERAL, TYPE,
+                        ATOMWORD}
+initializer_list_opt : {IDENT, OPERATOR, KWOPERATOR, LBRACE, LBRAC,
+                        LPAREN, EQUALS, QMARK, DOT, STAR, LITERAL, TYPE,
+                        ATOMWORD}
+more_initializers    : {COMMA}
+stmt                 : {IDENT, OPERATOR, KWOPERATOR, LBRACE, LPAREN,
+                        EQUALS, QMARK, SEMIC, STAR, LITERAL, TYPE,
+                        ATOMWORD, BREAK, CONTINUE, DO, FOR, GOTO, IF,
+                        RETURN, SWITCH, SYNCHRONIZED, THROW, TRY, WHILE}
+plain_stmt           : {IDENT, OPERATOR, KWOPERATOR, LPAREN, EQUALS,
+                        QMARK, STAR, LITERAL, TYPE, ATOMWORD}
+if_stmt              : {IF}
+for_stmt             : {FOR}
+switch_stmt          : {SWITCH}
+try_block            : {TRY}
+ident_opt            : {IDENT}
+expr_opt             : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN, EQUALS,
+                        QMARK, DOT, STAR, LITERAL, TYPE, ATOMWORD}
+qn_stmt_tail         : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN,
+                        EQUALS, COLON, QMARK, SEMIC, STAR, LITERAL,
+                        ATOMWORD}
+non_name_expr        : {OPERATOR, KWOPERATOR, LPAREN, EQUALS, QMARK,
+                        STAR, LITERAL, ATOMWORD}
+qn_lb_stmt_tail      : {IDENT, OPERATOR, KWOPERATOR, LBRAC, RBRAC,
+                        LPAREN, EQUALS, QMARK, DOT, STAR, LITERAL, TYPE,
+                        ATOMWORD}
+name_expr_tail       : {OPERATOR, KWOPERATOR, LPAREN, EQUALS, QMARK,
+                        STAR, LITERAL, ATOMWORD}
+stmt_list_opt        : {IDENT, OPERATOR, KWOPERATOR, LBRACE, LPAREN,
+                        EQUALS, QMARK, SEMIC, STAR, LITERAL, TYPE,
+                        ATOMWORD, BREAK, CONTINUE, DO, FOR, GOTO, IF,
+                        RETURN, SWITCH, SYNCHRONIZED, THROW, TRY, WHILE}
+else_opt             : {ELSE}
+for_init             : {IDENT, TYPE}
+expr_list_opt        : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN,
+                        EQUALS, QMARK, DOT, STAR, LITERAL, TYPE, ATOMWORD}
+qn_for_init_tail     : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN,
+                        EQUALS, QMARK, COMMA, STAR, LITERAL, ATOMWORD}
+qn_lb_for_init_tail  : {IDENT, OPERATOR, KWOPERATOR, LBRAC, RBRAC,
+                        LPAREN, EQUALS, QMARK, DOT, STAR, LITERAL, TYPE,
+                        ATOMWORD}
+more_exprs           : {COMMA}
+arm_list_opt         : {CASE, DEFAULT}
+arm                  : {CASE, DEFAULT}
+catches              : {CATCH, FINALLY}
+expr_list            : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN, EQUALS,
+                        QMARK, DOT, STAR, LITERAL, TYPE, ATOMWORD}
+atom                 : {IDENT, OPERATOR, KWOPERATOR, LBRAC, LPAREN, EQUALS,
+                        QMARK, DOT, STAR, LITERAL, TYPE, ATOMWORD}
+non_name_atom        : {OPERATOR, KWOPERATOR, LPAREN, EQUALS, QMARK,
+                        STAR, LITERAL, ATOMWORD}
