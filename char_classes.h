@@ -85,13 +85,10 @@ extern const char_class char_classes[128];
     case DIG_4to7:      \
     case DIG_89
 
-#define CASE_OCT_DIGIT  \
+#define CASE_DEC_DIGIT  \
     case DIG_0:         \
     case DIG_1to3:      \
-    case DIG_4to7
-
-#define CASE_DEC_DIGIT  \
-    CASE_OCT_DIGIT:     \
+    case DIG_4to7       \
     case DIG_89
 
 #define CASE_HEX_DIGIT  \

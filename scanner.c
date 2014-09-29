@@ -114,6 +114,9 @@ void scan(location_t * loc, token_t * tok)
         int c = get_character(loc);
         tok->length++;
         switch (state) {
+        
+        /* Possible States */
+        
         case start:
           switch (char_classes[c]) {
           case WHITE: //space, tab
@@ -128,7 +131,7 @@ void scan(location_t * loc, token_t * tok)
           case DIG_0: //0
             state = got_0;
             break;
-          CASE_NZ_DIGIT: //understand how this works.
+          CASE_NZ_DIGIT: //Non Zero Digits [1 - 9]
             state = got_dec;
             break;
           case PLUS: //+
@@ -136,9 +139,6 @@ void scan(location_t * loc, token_t * tok)
             break;
           case MINUS: //-
             state = got_minus;
-            break;
-          case EQUALS: //=
-            state = got_equals;
             break;
           case L_THAN: //<
             state = got_l_than;
@@ -152,7 +152,7 @@ void scan(location_t * loc, token_t * tok)
           case BANG: //!
           case PCT: //%
           case CARET: //^
-            state = got_op;
+            state = got_op; // ops = [!, %, ^]
             break;
           case LPAREN: //(
             ACCEPT(T_LPAREN);
@@ -182,789 +182,228 @@ void scan(location_t * loc, token_t * tok)
             ACCEPT_REUSE(T_EOF);
             break;
           case OTHER: //Every other possible input
-            /* This will be an error.  Eat as many bogus
-               characters as possible. */
             state = got_other;
             break;
-                }
-                break;
-            case in_identifier:
-                switch (char_classes[c]) {
-                    CASE_LETTER:
-                    CASE_DEC_DIGIT:
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_IDENTIFIER);
-                        filter_keywords(tok);
-                        break;
-                }
-                break;
-            case got_space:
-                switch (char_classes[c]) {
-                    case WHITE:
-                        break;  /* stay put */
-                    case EOLN:
-                        state = got_nl_space;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_SPACE);
-                        break;
-                }
-                break;
-            case got_nl_space:
-                switch (char_classes[c]) {
-                    case WHITE:
-                    case EOLN:
-                        break;  /* stay put */
-                    default:
-                        ACCEPT_REUSE(T_NL_SPACE);
-                        break;
-                }
-                break;
-            case got_other:
-                switch (char_classes[c]) {
-                    case OTHER:
-                    case WHITE:
-                    case EOLN:
-                        break;  /* stay put */
-                    default:
-                        fprintf(stderr, "Invalid token");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_SPACE);    /* most likely recovery? */
-                        break;
-                }
-                break;
-            case done:
-                fprintf(stderr, "scan: unexpected done in switch\n");
-                exit(-1);
-                break;
+          }
+          break;
+          
+        case in_identifier:
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            break;
+          default:
+            ACCEPT_REUSE(T_IDENTIFIER);
+            filter_keywords(tok);
+            break;
+          }
+          break;
 
-            /* operators: */
-            case got_plus:
-                switch (char_classes[c]) {
-                    case PLUS:
-                        ACCEPT(T_OPERATOR);       /* ++ */
-                        break;
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* += */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* + */
-                        break;
-                }
-                break;
-            case got_minus:
-                switch (char_classes[c]) {
-                    case MINUS:
-                        ACCEPT(T_OPERATOR);       /* -- */
-                        break;
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* -= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* - */
-                        break;
-                }
-                break;
-            case got_amp:
-                switch (char_classes[c]) {
-                    case AMP:
-                        ACCEPT(T_OPERATOR);       /* && */
-                        break;
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* &= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* & */
-                        break;
-                }
-                break;
-            case got_bar:
-                switch (char_classes[c]) {
-                    case BAR:
-                        ACCEPT(T_OPERATOR);       /* || */
-                        break;
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* |= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* | */
-                        break;
-                }
-                break;
-            case got_equals:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* == */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_EQUALS);   /* = */
-                        break;
-                }
-                break;
-            case got_l_than:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* <= */
-                        break;
-                    case L_THAN:
-                        state = got_l_than_2;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* < */
-                        break;
-                }
-                break;
-            case got_l_than_2:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* <<= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* << */
-                        break;
-                }
-                break;
-            case got_g_than:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* >= */
-                        break;
-                    case G_THAN:
-                        state = got_g_than_2;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* > */
-                        break;
-                }
-                break;
-            case got_g_than_2:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* >>= */
-                        break;
-                    case G_THAN:
-                        state = got_g_than_3;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* >> */
-                        break;
-                }
-                break;
-            case got_g_than_3:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* >>>= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* >>> */
-                        break;
-                }
-                break;
-            case got_star:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* *= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_STAR);     /* bare op */
-                        break;
-                }
-                break;
+        case got_space:
+          switch (char_classes[c]) {
+          case WHITE:
+            break;  /* stay put */
+          case EOLN:
+            state = got_nl_space;
+            break;
+          default:
+            ACCEPT_REUSE(T_SPACE);
+            break;
+          }
+          break;
+        
+        case got_nl_space:
+          switch (char_classes[c]) {
+          case WHITE:
+          case EOLN:
+            break;  /* stay put */
+          default:
+            ACCEPT_REUSE(T_NL_SPACE);
+            break;
+          }
+          break;
+        
+        case got_other: //stuff can get tricky
+          switch (char_classes[c]) {
+          case OTHER:
+          case WHITE:
+          case EOLN:
+            break;  /* stay put */
+          default:
+            fprintf(stderr, "Invalid token");
+            print_location(tok);
+            ACCEPT_REUSE(T_SPACE);    /* most likely recovery? */
+            break;
+          }
+          break;
+        
+        case done: //can it exit normally? (without errors)
+          fprintf(stderr, "scan: unexpected done in switch\n");
+          exit(-1);
+          break;  
+                    
+          
+        /************ operators: ************/
+        case got_plus:
+          switch (char_classes[c]) {
+          default:
+            ACCEPT_REUSE(T_OPERATOR); /* + */
+            break;
+          }
+          break;
+          
+        case got_slash:               /* / */
+          switch(char_classes[c]) {
+          default ACCEPT_REUSE(T_OPERATOR);
+          break;
+          }
+          break;
+        
+        case got_minus:
+          switch (char_classes[c]) {
+          default:
+            ACCEPT_REUSE(T_OPERATOR); /* - */
+            break;
+          }
+          break;
+        
+        case got_equals:
+          switch (char_classes[c]) {
+          default:
+            ACCEPT_REUSE(T_EQUALS);   /* = */ /* NEED TO REMOVE THIS CASE */
+            break;
+          }
+          break;
+        
+        case got_l_than:
+          switch (char_classes[c]) {
+          case EQUALS:
+            ACCEPT(T_OPERATOR);       /* <= */ /* NEED TO REMOVE THIS CASE */
+            break;
+          case L_THAN:
+            state = got_l_than_2;
+            break;
+          default:
+            ACCEPT_REUSE(T_OPERATOR); /* < */
+            break;
+          }
+          break;
+        
+        case got_g_than:
+          switch (char_classes[c]) {
+          case EQUALS:
+            ACCEPT(T_OPERATOR);       /* >= */ /* NEED TO REMOVE THIS CASE */
+            break;
+          case G_THAN:
+            state = got_g_than_2;
+            break;
+          default:
+            ACCEPT_REUSE(T_OPERATOR); /* > */
+            break;
+          }
+          break;
+        
+        case got_star:
+          switch (char_classes[c]) {
+          default:
+            ACCEPT_REUSE(T_STAR);     /* bare '*' op */
+            break;
+          }
+          break;
+        
+          /* NEED TO EXPAND THIS GOT OP, EXTRA CREDIT I GUESS */
+        case got_op: /* Can be ^, %, ! */
+          switch (char_classes[c]) {
+          default:
+            ACCEPT_REUSE(T_OPERATOR); /* bare '^' op */
+            break;
+          }
+          break;
 
-            case got_op:
-                switch (char_classes[c]) {
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* op= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* bare op */
-                        break;
+        /* numeric literals: */
+        case got_dot:
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            state = got_fp_dot;
+            break;
+          default:
+            ACCEPT_REUSE(T_DOT);      /* dot */
+            break;
+          }
+          break;
+          
+        case got_dec: //digits [0 - 9]
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            break;  /* stay put */
+          case DOT:
+            state = got_fp_dot;
+            break;
+          case LET_E:
+            state = starting_exp;
+            break;
+          default:
+            ACCEPT_REUSE(T_LITERAL);  /* decimal integer */
+            break;
+          }
+          break;
+        
+        case got_fp_dot: //Floats
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            break;  /* stay put */
+          CASE_LET_DF:
+            ACCEPT(T_LITERAL);        /* fp w/ suffix */
+            break;
+          case LET_E:
+            state = starting_exp;
+            break;
+          default:
+            ACCEPT_REUSE(T_LITERAL);  /* fp */
+            break;
+          }
+          break;
+          
+        case starting_exp:
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            state = got_fp_exp;
+            break;
+          CASE_SIGN:
+            state = got_exp_sign;
+            break;
+          default:
+            fprintf(stderr, "Invalid floating point literal");
+            print_location(tok);
+            ACCEPT_REUSE(T_LITERAL);  /* punt */
+            break;
+          }
+          break;
+          
+        case got_exp_sign:
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            state = got_fp_exp;
+            break;
+          default:
+            fprintf(stderr, "Invalid floating point literal");
+            print_location(tok);
+            ACCEPT_REUSE(T_LITERAL);  /* punt */
+            break;
+          }
+          break;
+          
+        case got_fp_exp:
+          switch (char_classes[c]) {
+          CASE_DEC_DIGIT:
+            break;  /* stay put */
+          CASE_LET_DF:
+            ACCEPT(T_LITERAL);        /* fp w/ suffix */
+            break;
+          default:
+            ACCEPT_REUSE(T_LITERAL);  /* fp */
+            break;
                 }
-                break;
-
-            /* numeric literals: */
-            case got_dot:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        state = got_fp_dot;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_DOT);      /* dot */
-                        break;
-                }
-                break;
-            case got_0:
-                switch (char_classes[c]) {
-                    case LET_L:
-                        ACCEPT(T_LITERAL);        /* 0L */
-                        break;
-                    case LET_E:
-                        state = starting_exp;
-                        break;
-                    CASE_LET_DF:
-                        ACCEPT(T_LITERAL);        /* 0D or 0F */
-                        break;
-                    case LET_X:
-                        state = starting_hex;
-                        break;
-                    CASE_OCT_DIGIT:
-                        state = got_oct;
-                        break;
-                    case DIG_89:
-                        state = got_0_89;
-                        break;
-                    case DOT:
-                        state = got_fp_dot;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_LITERAL);  /* 0 */
-                        break;
-                }
-                break;
-            case got_0_89:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        break;  /* stay put */
-                    case DOT:
-                        state = got_fp_dot;
-                        break;
-                    case LET_E:
-                        state = starting_exp;
-                        break;
-                    CASE_LET_DF:
-                        ACCEPT(T_LITERAL);        /* FP w/ suffix */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid decimal literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case got_oct:
-                switch (char_classes[c]) {
-                    CASE_OCT_DIGIT:
-                        break;  /* stay put */
-                    case LET_L:
-                    CASE_LET_DF:
-                        ACCEPT(T_LITERAL);        /* int or FP w/ suffix */
-                        break;
-                    case LET_E:
-                        state = starting_exp;
-                        break;
-                    case DOT:
-                        state = got_fp_dot;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_LITERAL);  /* octal integer */
-                        break;
-                }
-                break;
-            case got_dec:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        break;  /* stay put */
-                    case DOT:
-                        state = got_fp_dot;
-                        break;
-                    case LET_E:
-                        state = starting_exp;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_LITERAL);  /* decimal integer */
-                        break;
-                }
-                break;
-            case starting_hex:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = got_hex;
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid hexadecimal literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case got_hex:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        break;  /* stay put */
-                    case LET_L:
-                        ACCEPT(T_LITERAL);        /* hex w/ suffix */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_LITERAL);
-                        break;                  /* hexadecimal integer */
-                }
-                break;
-            case got_fp_dot:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        break;  /* stay put */
-                    CASE_LET_DF:
-                        ACCEPT(T_LITERAL);        /* fp w/ suffix */
-                        break;
-                    case LET_E:
-                        state = starting_exp;
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_LITERAL);  /* fp */
-                        break;
-                }
-                break;
-            case starting_exp:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        state = got_fp_exp;
-                        break;
-                    CASE_SIGN:
-                        state = got_exp_sign;
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid floating point literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case got_exp_sign:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        state = got_fp_exp;
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid floating point literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case got_fp_exp:
-                switch (char_classes[c]) {
-                    CASE_DEC_DIGIT:
-                        break;  /* stay put */
-                    CASE_LET_DF:
-                        ACCEPT(T_LITERAL);        /* fp w/ suffix */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_LITERAL);  /* fp */
-                        break;
-                }
-                break;
-
-            /* character literals: */
-            case got_s_quote:
-                switch (char_classes[c]) {
-                    case B_SLASH:
-                        state = ch_esc;
-                        break;
-                    case S_QUOTE:
-                        fprintf(stderr, "Invalid character literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);  /* punt */
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "Invalid character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        state = got_sq_char;
-                        break;
-                }
-                break;
-            case got_sq_char:
-                switch (char_classes[c]) {
-                    case S_QUOTE:
-                        ACCEPT(T_LITERAL);        /* character literal */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case ch_esc:
-                switch (char_classes[c]) {
-                    case LET_b:
-                    case LET_t:
-                    case LET_n:
-                    case LET_f:
-                    case LET_r:
-                    case S_QUOTE:
-                    case D_QUOTE:
-                    case B_SLASH:
-                        state = got_sq_char;
-                        break;
-                    case DIG_0:
-                    case DIG_1to3:
-                        state = ch_oct_esc_1;
-                        break;
-                    case DIG_4to7:
-                        state = ch_oct_esc_2;
-                        break;
-                    case LET_u:
-                        state = ch_uni_esc_1;
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        state = got_sq_char;    /* most likely recovery? */
-                        break;
-                }
-                break;
-            case ch_oct_esc_1:
-                switch (char_classes[c]) {
-                    CASE_OCT_DIGIT:
-                        state = ch_oct_esc_2;
-                        break;
-                    case S_QUOTE:
-                        ACCEPT(T_LITERAL);        /* character literal */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case ch_oct_esc_2:
-                switch (char_classes[c]) {
-                    CASE_OCT_DIGIT:
-                        state = got_sq_char;
-                        break;
-                    case S_QUOTE:
-                        ACCEPT(T_LITERAL);        /* character literal */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case ch_uni_esc_1:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = ch_uni_esc_2;
-                        break;
-                    case S_QUOTE:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case ch_uni_esc_2:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = ch_uni_esc_3;
-                        break;
-                    case S_QUOTE:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case ch_uni_esc_3:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = ch_uni_esc_4;
-                        break;
-                    case S_QUOTE:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-            case ch_uni_esc_4:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = got_sq_char;
-                        break;
-                    case S_QUOTE:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in character literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                }
-                break;
-
-            /* string literals: */
-            case in_string:
-                switch (char_classes[c]) {
-                    case B_SLASH:
-                        state = str_esc;
-                        break;
-                    case D_QUOTE:
-                        ACCEPT(T_LITERAL);        /* string literal */
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        break;  /* stay put */
-                }
-                break;
-            case str_esc:
-                switch (char_classes[c]) {
-                    case LET_b:
-                    case LET_t:
-                    case LET_n:
-                    case LET_f:
-                    case LET_r:
-                    case S_QUOTE:
-                    case D_QUOTE:
-                    case B_SLASH:
-                        state = in_string;
-                        break;
-                    case DIG_0:
-                    case DIG_1to3:
-                        state = str_oct_esc_1;
-                        break;
-                    case DIG_4to7:
-                        state = str_oct_esc_2;
-                        break;
-                    case LET_u:
-                        state = str_uni_esc_1;
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = in_string;      /* most likely recovery? */
-                        break;
-                }
-                break;
-            case str_oct_esc_1:
-                switch (char_classes[c]) {
-                    CASE_OCT_DIGIT:
-                        state = str_oct_esc_2;
-                        break;
-                    case D_QUOTE:
-                        ACCEPT(T_LITERAL);        /* string literal */
-                        break;
-                    case B_SLASH:
-                        state = str_esc;
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        state = in_string;
-                        break;
-                }
-                break;
-            case str_oct_esc_2:
-                switch (char_classes[c]) {
-                    case D_QUOTE:
-                        ACCEPT(T_LITERAL);        /* string literal */
-                        break;
-                    case B_SLASH:
-                        state = str_esc;
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:    /* including OCT_DIGIT */
-                        state = in_string;
-                        break;
-                }
-                break;
-            case str_uni_esc_1:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = str_uni_esc_2;
-                        break;
-                    case D_QUOTE:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    case B_SLASH:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = str_esc;        /* most likely recovery? */
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = in_string;      /* most likely recovery? */
-                        break;
-                }
-                break;
-            case str_uni_esc_2:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = str_uni_esc_3;
-                        break;
-                    case D_QUOTE:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    case B_SLASH:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = str_esc;        /* most likely recovery? */
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = in_string;      /* most likely recovery? */
-                        break;
-                }
-                break;
-            case str_uni_esc_3:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = str_uni_esc_4;
-                        break;
-                    case D_QUOTE:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    case B_SLASH:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = str_esc;        /* most likely recovery? */
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = in_string;      /* most likely recovery? */
-                        break;
-                }
-                break;
-            case str_uni_esc_4:
-                switch (char_classes[c]) {
-                    CASE_HEX_DIGIT:
-                        state = in_string;
-                        break;
-                    case D_QUOTE:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        ACCEPT(T_LITERAL);        /* most likely recovery? */
-                        break;
-                    case B_SLASH:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = str_esc;        /* most likely recovery? */
-                        break;
-                    case EOLN:
-                        fprintf(stderr, "End of line in string literal");
-                        print_location(tok);
-                        ACCEPT_REUSE(T_LITERAL);  /* punt */
-                        break;
-                    default:
-                        fprintf(stderr, "Invalid escape in string literal");
-                        print_location(tok);
-                        state = in_string;      /* most likely recovery? */
-                        break;
-                }
-                break;
-
-            /* comments: */
-            case got_slash:
-                switch (char_classes[c]) {
-                    case STAR:
-                        state = in_old_comment;
-                        break;
-                    case SLASH:
-                        state = in_new_comment;
-                        break;
-                    case EQUALS:
-                        ACCEPT(T_OPERATOR);       /* /= */
-                        break;
-                    default:
-                        ACCEPT_REUSE(T_OPERATOR); /* / */
-                        break;
-                }
-                break;
-            case in_old_comment:
-                switch (char_classes[c]) {
-                    case STAR:
-                        state = ending_comment;
-                        break;
-                    case END:
-                        fprintf(stderr, "End of file within comment.\n");
-                        ACCEPT_REUSE(T_OLD_COMMENT);
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case ending_comment:
-                switch (char_classes[c]) {
-                    case END:
-                        fprintf(stderr, "End of file within comment.\n");
-                        /* fall through */
-                    case SLASH:
-                        ACCEPT(T_OLD_COMMENT);
-                        break;
-                    case STAR:
-                        break;
-                    default:
-                        state = in_old_comment;
-                        break;
-                }
-                break;
-            case in_new_comment:
-                switch (char_classes[c]) {
-                    case EOLN:
-                        ACCEPT_REUSE(T_NEW_COMMENT);
-                        break;
-                    default:
-                        break;
-                }
-                break;
+          break;
         }
     }
 }
