@@ -16,13 +16,13 @@ static line_t head = {0, 0, 0};
     Read source program into a linked list of line_t structures,
     with (empty) head node "head".
  ********/
-void initialize_reader()
+void initialize_reader(FILE *fp)
 {
     char s[MAX_LINE_LEN];
     line_t * tail = &head;
     while (1) {
         line_t * old_tail;
-        if (!fgets(s, MAX_LINE_LEN, stdin)) break;
+        if (!fgets(s, MAX_LINE_LEN, fp)) break;
         old_tail = tail;
         tail = (line_t *) malloc(sizeof(line_t));
         tail->data = strdup(s);
@@ -64,7 +64,8 @@ void finalize_reader()
 
     while (l) {
         line_t * t = l;
-        free(l->data);
+        if (l->data)
+            free(l->data);
         l = l->next;
         free(t);
     }

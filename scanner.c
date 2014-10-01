@@ -131,9 +131,6 @@ void scan(location_t * loc, token_t * tok)
           case DIG_0: //0
             state = got_0;
             break;
-          CASE_NZ_DIGIT: //Non Zero Digits [1 - 9]
-            state = got_dec;
-            break;
           case PLUS: //+
             state = got_plus;
             break;
@@ -189,7 +186,7 @@ void scan(location_t * loc, token_t * tok)
           
         case in_identifier:
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             break;
           default:
             ACCEPT_REUSE(T_IDENTIFIER);
@@ -241,10 +238,17 @@ void scan(location_t * loc, token_t * tok)
           exit(-1);
           break;  
                     
+
+          /************ semicolon: ************/
+
+          /* May not need to do anything because when reading a semicolon, the operation ends */
           
         /************ operators: ************/
         case got_plus:
           switch (char_classes[c]) {
+          case PLUS:
+            ACCEPT(T_OPERATOR); /* ++ */
+            break;
           default:
             ACCEPT_REUSE(T_OPERATOR); /* + */
             break;
@@ -253,13 +257,17 @@ void scan(location_t * loc, token_t * tok)
           
         case got_slash:               /* / */
           switch(char_classes[c]) {
-          default ACCEPT_REUSE(T_OPERATOR);
+          default:
+            ACCEPT_REUSE(T_OPERATOR);
           break;
           }
           break;
         
         case got_minus:
           switch (char_classes[c]) {
+           case MINUS:
+            ACCEPT(T_OPERATOR); /* -- */
+            break;
           default:
             ACCEPT_REUSE(T_OPERATOR); /* - */
             break;
@@ -322,7 +330,7 @@ void scan(location_t * loc, token_t * tok)
         /* numeric literals: */
         case got_dot:
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             state = got_fp_dot;
             break;
           default:
@@ -333,7 +341,7 @@ void scan(location_t * loc, token_t * tok)
           
         case got_dec: //digits [0 - 9]
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             break;  /* stay put */
           case DOT:
             state = got_fp_dot;
@@ -349,9 +357,9 @@ void scan(location_t * loc, token_t * tok)
         
         case got_fp_dot: //Floats
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             break;  /* stay put */
-          CASE_LET_DF:
+          CASE_LET_DF
             ACCEPT(T_LITERAL);        /* fp w/ suffix */
             break;
           case LET_E:
@@ -365,10 +373,10 @@ void scan(location_t * loc, token_t * tok)
           
         case starting_exp:
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             state = got_fp_exp;
             break;
-          CASE_SIGN:
+          CASE_SIGN
             state = got_exp_sign;
             break;
           default:
@@ -381,7 +389,7 @@ void scan(location_t * loc, token_t * tok)
           
         case got_exp_sign:
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             state = got_fp_exp;
             break;
           default:
@@ -394,9 +402,9 @@ void scan(location_t * loc, token_t * tok)
           
         case got_fp_exp:
           switch (char_classes[c]) {
-          CASE_DEC_DIGIT:
+          CASE_DEC_DIGIT
             break;  /* stay put */
-          CASE_LET_DF:
+          CASE_LET_DF
             ACCEPT(T_LITERAL);        /* fp w/ suffix */
             break;
           default:

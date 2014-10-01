@@ -64,42 +64,30 @@ extern const char_class char_classes[128];
 /* definitions to make switch statements easier to write: */
 
 #define CASE_LET_DF \
-    case LET_DF:    \
-    case LET_f
+  case LET_DF:      \
+ case LET_f:
 
 #define CASE_LETTER \
-    case LET_ABC:   \
-    case LET_b:     \
-    CASE_LET_DF:    \
-    case LET_E:     \
-    case LET_L:     \
-    case LET_n:     \
-    case LET_r:     \
-    case LET_t:     \
-    case LET_u:     \
-    case LET_X:     \
-    case LET_OTHER
-
-#define CASE_NZ_DIGIT   \
-    case DIG_1to3:      \
-    case DIG_4to7:      \
-    case DIG_89
+  case LET_ABC:     \
+ case LET_b:        \
+ CASE_LET_DF        \
+ case LET_E:        \
+ case LET_L:        \
+ case LET_n:        \
+ case LET_r:        \
+ case LET_t:        \
+ case LET_u:        \
+ case LET_X:        \
+ case LET_OTHER:
 
 #define CASE_DEC_DIGIT  \
-    case DIG_0:         \
-    case DIG_1to3:      \
-    case DIG_4to7       \
-    case DIG_89
-
-#define CASE_HEX_DIGIT  \
-    CASE_DEC_DIGIT:     \
-    case LET_ABC:       \
-    case LET_b:         \
-    CASE_LET_DF:        \
-    case LET_E
+  case DIG_0:           \
+ case DIG_1to3:         \
+ case DIG_4to7:         \
+ case DIG_89:
 
 #define CASE_SIGN       \
-    case PLUS:          \
-    case MINUS
+  case PLUS:            \
+ case MINUS:
 
 #endif
