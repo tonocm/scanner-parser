@@ -10,6 +10,7 @@ static location_t  loc;
 static double * tot; //this is a test
 static double  temp; //test
 static int indent_level = 0;
+static int init =0;
 #define    INDENT_WIDTH   4
 
 /* forward declarations: */
@@ -23,29 +24,42 @@ static void parse_compilation_unit();
 static void get_token()
 {
   int i;
-  int init;
+  //int init;
 
   token_class prev_class = T_SPACE;
-  init = 0;
+  init = init + tok.length;
   do {
 
     scan(&loc, &tok);
     prev_class = tok.tc;
     
-    if(tok.tc == T_SPACE || tok.tc == T_NL_SPACE)
-      init = tok.tc;
+    //if(tok.tc == T_SEMIC)
+      //printf("we have a semicolon... do something!\n");
+      //init = 0; //reset the scanning of a line;
       
+    if(tok.tc == T_NL_SPACE)
+      init = 0; //resets the scanning of a line;
+    
+    if(tok.tc == T_SPACE)
+      init = init + tok.length; //gets the length of the furthermost space
+    
   } while (tok.tc == T_SPACE || tok.tc == T_NL_SPACE);
 
   /* Interpreting scanned token */   
-   
+  
   tok.data = (char *)malloc((tok.length)*sizeof(char)); //allocating space for the string
   
+  
   /* Stores token data in token */
-  for(i=init; i < tok.length; i++){
-      tok.data[i] = tok.location.line->data[i];
+  for(i=0;/*i=init;*/ i < tok.length; i++){
+      tok.data[i] = tok.location.line->data[init+i];
     }
+  
+  if(tok.tc == T_SEMIC)
+    init = 0;
+  
   printf("%s\n",tok.data);
+  
 }
 
 /********
