@@ -23,10 +23,18 @@ static void parse_compilation_unit();
 static void get_token()
 {
   int i;
+  int init;
+
   token_class prev_class = T_SPACE;
+  init = 0;
   do {
+
     scan(&loc, &tok);
     prev_class = tok.tc;
+    
+    if(tok.tc == T_SPACE || tok.tc == T_NL_SPACE)
+      init = tok.tc;
+      
   } while (tok.tc == T_SPACE || tok.tc == T_NL_SPACE);
 
   /* Interpreting scanned token */   
@@ -34,7 +42,7 @@ static void get_token()
   tok.data = (char *)malloc((tok.length)*sizeof(char)); //allocating space for the string
   
   /* Stores token data in token */
-  for(i=0; i < tok.length; i++){
+  for(i=init; i < tok.length; i++){
       tok.data[i] = tok.location.line->data[i];
     }
   printf("%s\n",tok.data);

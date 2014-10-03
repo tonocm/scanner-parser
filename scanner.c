@@ -124,7 +124,7 @@ void scan(location_t * loc, token_t * tok)
           switch (char_classes[c]) {
           case WHITE: //space, tab
           case EOLN: //newline (return)
-            state = got_nl_space;
+            state = got_space;
             break;
           case DOT: //.
             state = got_dot;
@@ -168,13 +168,13 @@ void scan(location_t * loc, token_t * tok)
           }
           break;
           
-        case got_nl_space:
+        case got_space:
           switch (char_classes[c]) {
           case WHITE:
           case EOLN:
             break;  /* stay put */
           default:
-            ACCEPT_REUSE(T_NL_SPACE);
+            ACCEPT_REUSE(T_SPACE);
             break;
           }
           break;
@@ -251,7 +251,7 @@ void scan(location_t * loc, token_t * tok)
             CASE_DEC_DIGIT
               break;  /* stay put */
           case DOT:
-            state = got_fp_dot;
+            //state = got_fp_dot;
             break;
           default:
             ACCEPT_REUSE(T_NUM);  /* decimal integer */
@@ -264,7 +264,7 @@ void scan(location_t * loc, token_t * tok)
             CASE_DEC_DIGIT
               break;
           default:
-            ACCEPT_REUSE(T_NUM);  /* fp */
+            ACCEPT_REUSE(T_NUM);  /* float */
             break;
           }
           break;
