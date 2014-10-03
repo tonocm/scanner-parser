@@ -20,41 +20,6 @@ static void T();
 static void E();
 static void parse_compilation_unit();
 
-static int at_bol = 1;
-     /* We're about to start a new line of output. */
-static int comment_nl = 0;
-     /* We've just printed a newline because of a comment.
-        Don't print *another* newline if the parser asks for one. */
-
-/********
-    Print a newline.  Remember we did so, so put_token can indent
-    appropriately.  Skip newline if we've already done it in the process
-    of printing a comment.
- ********/
-static void newline()
-{
-    if (comment_nl) {
-        comment_nl = 0;
-    } else {
-        putchar('\n');
-        at_bol = 1;
-    }
-}
-
-/********
-    Print current token.  Precede with appropriate space.
- ********/
-static void put_token()
-{
-  printf("Woot!\n");
-  //printf("%s\n", tok.data);
-}
-
-/*
-  Get next token from the scanner.  Filter out white space, comments,
-  and newlines.
-*/
-
 static void get_token()
 {
   int i;
@@ -91,7 +56,8 @@ static void parse_error()
  ********/
 static void match(token_class tc)
 {
-    put_token();
+  printf("Woot!\n");
+  //printf("%s\n", tok.data);
     get_token();
 }
 
@@ -124,7 +90,7 @@ static void Etail(){
   
   switch (tok.tc) {
     
-  case T_MINUS: // <- Error
+  case T_MINUS:
     match(T_MINUS);
     T();
     Etail();
@@ -212,10 +178,9 @@ static void F(){
     tok.num = atof(tok.data);
     match(T_NUM);
     break;
-    //case T_SEMIC: //not actually needed. it's the only thing we actually accept as a token which has no evaluation, so it will stop recursion all the way
-    //do something
-    break;
+  
   default:
+    //semicolon or epsilon
     break;
   }
 }

@@ -58,17 +58,23 @@ typedef enum {
     T_TRY,
     T_WHILE,
     T_SLASH,
-    T_PCT
+    T_PCT,
+    T_PLUSPLUS,
+    T_MINUSMINUS,
+    T_PLUS,
+    T_MINUS,
+    T_NUM
+
 } token_class;
 
 typedef struct {
-    token_class tc;
-    location_t location;
-    int length;     /* length of token in characters (may span lines) */
+  token_class tc;
+  location_t location;
+  int length;
+  char * data;
+  double num;
 } token_t;
 
 void scan(location_t * loc, token_t * tok);
-    /* Modify tok to describe next token of input.
-        Update loc to refer to location immediately after tok. */
-
+    
 #endif
