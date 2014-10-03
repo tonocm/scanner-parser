@@ -849,23 +849,23 @@ static void parse_E()
 }
 static void parse_Etail()
 {
-    /*switch (tok.tc) {
-        //case W:
-        //    match(tok.tc);
-        //    parse_T_tail(parse_T());
-        //    break;
+    switch (tok.tc) {
+        case W:
+            match(tok.tc);
+            parse_T_tail(parse_T());
+            break;
         default:
             parse_error();
             break;
-    }*/
+    }
 }
 static void parse_T()
 {
-    //parse_F(parse_Ttail());
+    parse_F(parse_Ttail());
 }
 static void parse_Ttail()
 {
-    /*switch (tok.tc) {
+    switch (tok.tc) {
         case mul:
             match(tok.tc);
             parse_Ttail(parse_F());
@@ -880,11 +880,11 @@ static void parse_Ttail()
             break;
         default:
             break;
-    }*/
+    }
 }
 static void parse_F()
 {
-    /*switch (tok.tc) {
+    switch (tok.tc) {
         case paren:
             match(tok.tc);
             parse_E();
@@ -895,6 +895,6 @@ static void parse_F()
             break;
         default:
             break;
-     }*/
+     }
 }
 
