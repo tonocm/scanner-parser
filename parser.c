@@ -842,3 +842,59 @@ static void parse_stuff()
             break;
     }
 }
+static void parse_E()
+{
+            parse_Ttail(parse_T());
+    
+}
+static void parse_Etail()
+{
+    /*switch (tok.tc) {
+        //case W:
+        //    match(tok.tc);
+        //    parse_T_tail(parse_T());
+        //    break;
+        default:
+            parse_error();
+            break;
+    }*/
+}
+static void parse_T()
+{
+    //parse_F(parse_Ttail());
+}
+static void parse_Ttail()
+{
+    /*switch (tok.tc) {
+        case mul:
+            match(tok.tc);
+            parse_Ttail(parse_F());
+            break;
+        case div:
+            match(tok.tc);
+            parse_Ttail(parse_F());
+            break;
+        case mod:
+            match(tok.tc);
+            parse_Ttail(parse_F());
+            break;
+        default:
+            break;
+    }*/
+}
+static void parse_F()
+{
+    /*switch (tok.tc) {
+        case paren:
+            match(tok.tc);
+            parse_E();
+            match(tok.tc);
+            break;
+        case num:
+            match(tok.tc);
+            break;
+        default:
+            break;
+     }*/
+}
+
