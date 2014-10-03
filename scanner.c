@@ -41,6 +41,7 @@ void scan(location_t * loc, token_t * tok)
             got_dot,
             got_0,
             got_0_89,
+            got_num,
             got_oct,
             got_dec,
             starting_hex,
@@ -128,8 +129,11 @@ void scan(location_t * loc, token_t * tok)
           case DOT: //.
             state = got_dot;
             break;
-          case DIG_0: //0
-            state = got_0;
+          case DIG_0:
+          case DIG_1to3:
+          case DIG_4to7:
+          case DIG_89:
+            state = got_num;
             break;
           case PLUS: //+
             state = got_plus;
@@ -144,12 +148,10 @@ void scan(location_t * loc, token_t * tok)
             state = got_g_than;
             break;
           case STAR: //*
-            state = got_star;
+            ACCEPT(T_STAR);
             break;
-          case BANG: //!
           case PCT: //%
-          case CARET: //^
-            state = got_op; // ops = [!, %, ^]
+            ACCEPT(T_PCT);
             break;
           case LPAREN: //(
             ACCEPT(T_LPAREN);
@@ -173,7 +175,8 @@ void scan(location_t * loc, token_t * tok)
             ACCEPT(T_RBRACE);
             break;
           case SLASH: //'/'
-            state = got_slash;
+            ACCEPT(T_SLASH);
+            //state = got_slash;
             break;
           case END: //EOF
             ACCEPT_REUSE(T_EOF);
@@ -250,7 +253,7 @@ void scan(location_t * loc, token_t * tok)
             ACCEPT(T_OPERATOR); /* ++ */
             break;
           default:
-            ACCEPT_REUSE(T_OPERATOR); /* + */
+            ACCEPT_REUSE(PLUS); /* + */
             break;
           }
           break;
@@ -339,7 +342,7 @@ void scan(location_t * loc, token_t * tok)
           }
           break;
           
-        case got_dec: //digits [0 - 9]
+        case got_num: //digits [0 - 9]
           switch (char_classes[c]) {
           CASE_DEC_DIGIT
             break;  /* stay put */
