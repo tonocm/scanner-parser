@@ -71,7 +71,9 @@ void scan(location_t * loc, token_t * tok)
             str_uni_esc_4,
         /* operators: */
             got_plus,
+            got_plusplus,
             got_minus,
+            got_minusminus,
             got_amp,
             got_bar,
             got_equals,
@@ -104,7 +106,6 @@ void scan(location_t * loc, token_t * tok)
     tok->tc = t;  \
     state = done;
 
-
     /* The Program */
 
     tok->location = *loc;
@@ -121,10 +122,11 @@ void scan(location_t * loc, token_t * tok)
         case start:
           switch (char_classes[c]) {
           case WHITE: //space, tab
-            state = got_space;
-            break;
           case EOLN: //newline (return)
-            state = got_nl_space;
+            state = got_space;
+            //break;
+            //
+            //state = got_nl_space;
             break;
           case DOT: //.
             state = got_dot;
@@ -201,9 +203,9 @@ void scan(location_t * loc, token_t * tok)
         case got_space:
           switch (char_classes[c]) {
           case WHITE:
-            break;  /* stay put */
+            //break;  /* stay put */
           case EOLN:
-            state = got_nl_space;
+            //state = got_nl_space;
             break;
           default:
             ACCEPT_REUSE(T_SPACE);
@@ -249,34 +251,48 @@ void scan(location_t * loc, token_t * tok)
         /************ operators: ************/
         case got_plus:
           switch (char_classes[c]) {
-          case PLUS:
-            ACCEPT(T_OPERATOR); /* ++ */
+          case PLUS: // <- either PLUS or PLUSPLUS
+            state = got_plusplus;
+            //ACCEPT(T_PLUSPLUS); /* ++ */
             break;
           default:
-            ACCEPT_REUSE(PLUS); /* + */
+            //ACCEPT_REUSE(T_PLUS); /* + */
             break;
           }
           break;
-          
+        case got_plusplus:
+          switch (char_classes[c]){
+          case PLUS:
+            ACCEPT(T_PLUSPLUS); /* ++ */
+          default:
+            ACCEPT_REUSE(T_PLUS); /* + */
+          }
         case got_slash:               /* / */
           switch(char_classes[c]) {
           default:
-            ACCEPT_REUSE(T_OPERATOR);
+            ACCEPT_REUSE(T_SLASH);
           break;
           }
           break;
         
         case got_minus:
           switch (char_classes[c]) {
-           case MINUS:
-            ACCEPT(T_OPERATOR); /* -- */
+          case MINUS: // <- either MINUS or MINUSMINUS
+            state = got_minusminus;
+            //ACCEPT(T_MINUSMINUS); /* -- */
             break;
           default:
-            ACCEPT_REUSE(T_OPERATOR); /* - */
+            //ACCEPT_REUSE(T_MINUS); /* - */
             break;
           }
           break;
-        
+        case got_minusminus:
+          switch (char_classes[c]){
+          case MINUS:
+            ACCEPT(T_MINUSMINUS); /* -- */
+          default:
+            ACCEPT_REUSE(T_MINUS); /* - */
+          }
         case got_equals:
           switch (char_classes[c]) {
           default:
@@ -342,19 +358,23 @@ void scan(location_t * loc, token_t * tok)
           }
           break;
           
-        case got_num: //digits [0 - 9]
-          switch (char_classes[c]) {
-          CASE_DEC_DIGIT
-            break;  /* stay put */
-          case DOT:
-            state = got_fp_dot;
-            break;
-          case LET_E:
-            state = starting_exp;
-            break;
-          default:
-            ACCEPT_REUSE(T_LITERAL);  /* decimal integer */
-            break;
+        case got_num: //floats [0 - 9]
+          //flag = TRUE;
+          //while(flag){
+          //loc_save = *loc; //enables accept reuse
+          //c = get_character(loc);
+          //tok->length++;
+            switch (char_classes[c]) {
+              CASE_DEC_DIGIT
+              break;  /* stay put */
+            case DOT:
+              state = got_fp_dot;
+              break;
+            default:
+              //flag = FALSE;
+              ACCEPT_REUSE(T_NUM);  /* decimal integer */
+              break;
+              //}
           }
           break;
         
@@ -362,14 +382,8 @@ void scan(location_t * loc, token_t * tok)
           switch (char_classes[c]) {
           CASE_DEC_DIGIT
             break;  /* stay put */
-          CASE_LET_DF
-            ACCEPT(T_LITERAL);        /* fp w/ suffix */
-            break;
-          case LET_E:
-            state = starting_exp;
-            break;
           default:
-            ACCEPT_REUSE(T_LITERAL);  /* fp */
+            ACCEPT_REUSE(T_NUM);  /* fp */
             break;
           }
           break;

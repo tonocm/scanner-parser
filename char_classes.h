@@ -54,6 +54,8 @@ typedef enum {
     CARET,      /* ^ */
     LBRACE,     /* { */
     BAR,        /* | */
+    PLUSPLUS,   /* ++ */
+    MINUSMINUS,  /* -- */
     RBRACE,     /* } */
     TILDE,      /* ~ */
     OTHER       /* catchall for everything else:

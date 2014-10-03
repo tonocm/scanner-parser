@@ -47,14 +47,16 @@ const char_class char_classes[128] = {
   OTHER,      /* # */
   LET_OTHER,  /* $ */
   PCT,        /* % */
-  AMP,        /* & */
+  //AMP,        /* & */
   S_QUOTE,    /* ' */
   LPAREN,     /* ( */
   RPAREN,     /* ) */
   STAR,       /* * */
   PLUS,       /* + */
-  COMMA,      /* , */
+  PLUSPLUS,   /* ++ */
+  //COMMA,      /* , */
   MINUS,      /* - */
+  MINUSMINUS, /* -- */
   DOT,        /* . */
   SLASH,      /* / */
   DIG_0,      /* 0 */

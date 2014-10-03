@@ -19,7 +19,7 @@ int main (int argc, char *argv[]) {
     }
   
     initialize_reader(fp);
-    
+   
     // Do scan, parse, evaluate here 
     parse();
     

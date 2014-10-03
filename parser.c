@@ -23,12 +23,17 @@
 
 static token_t     tok;
 static location_t  loc;
-
+static double * tot; //this is a test
+static double  temp; //test
 static int indent_level = 0;
 #define    INDENT_WIDTH   4
 
 /* forward declarations: */
-
+static void Ttail();
+static void Etail();
+static void F();
+static void T();
+static void E();
 static void parse_compilation_unit();
 
 static int at_bol = 1;
@@ -57,69 +62,33 @@ static void newline()
  ********/
 static void put_token()
 {
-    if (at_bol) {
-        int i = (indent_level) * INDENT_WIDTH;
-        while (i--) {
-            putchar(' ');
-        }
-    } else {
-        if (tok.tc == T_NEW_COMMENT || tok.tc == T_OLD_COMMENT) {
-            int i = INDENT_WIDTH;
-            while (i--) {
-                putchar(' ');
-            }
-        } else {
-            putchar(' ');       /* YOU NEED TO FIX THIS; insert space
-                                between tokens only when appropriate */
-        }
-    }
-    print_token(&tok);
-    at_bol = 0;
-    comment_nl = 0;     /* no longer care if comment printed a newline */
+  printf("Woot!\n");
+  //printf("%s\n", tok.data);
 }
 
-/********
-    Get next token from the scanner.  Filter out white space, comments,
-    and newlines.
+/*
+  Get next token from the scanner.  Filter out white space, comments,
+  and newlines.
+*/
 
-    Print comments appropriately:
-      - If comment is preceded by a newline in input, precede it with
-        newline in output.  If an old-style comment is followed by a
-        newline, add a newline to the output.  These are the ONLY places
-        where the formatter pays attention to white space in the input.
-      - if the comment is new style (// to eoln), follow with newline
-        (scanner does not include newline in comment).
-      - with both of the previous rules, if the parser also decides to
-        generate a newline (e.g. for a semicolon), combine them so we
-        don't generate an *extra* one.
- ********/
 static void get_token()
 {
-    token_class prev_class = T_SPACE;
-    do {
-        scan(&loc, &tok);
-        if (tok.tc == T_NL_SPACE && prev_class == T_OLD_COMMENT) {
-            /* comment was followed by a newline */
-            newline();
-            comment_nl = 1;     /* remember this newline */
-        }
-        if (tok.tc == T_OLD_COMMENT || tok.tc == T_NEW_COMMENT) {
-            if (prev_class == T_NL_SPACE) {
-                /* comment was preceded by a newline */
-                newline();
-                comment_nl = 1;     /* remember this newline */
-            }
-            put_token();    /* print comment itself */
-            if (tok.tc == T_NEW_COMMENT) {
-                /* newline is not part of comment */
-                comment_nl = 0;     /* we really do want this one */
-                newline();
-                comment_nl = 1;     /* remember this newline */
-            }
-        }
-        prev_class = tok.tc;
-    } while (tok.tc == T_SPACE       || tok.tc == T_NL_SPACE
-          || tok.tc == T_OLD_COMMENT || tok.tc == T_NEW_COMMENT);
+  int i;
+  token_class prev_class = T_SPACE;
+  do {
+    scan(&loc, &tok);
+    prev_class = tok.tc;
+  } while (tok.tc == T_SPACE || tok.tc == T_NL_SPACE);
+
+  /* Interpreting scanned token */   
+   
+  tok.data = (char *)malloc((tok.length)*sizeof(char)); //allocating space for the string
+  
+  /* Stores token data in token */
+  for(i=0; i < tok.length; i++){
+      tok.data[i] = tok.location.line->data[i];
+    }
+  printf("%s\n",tok.data);
 }
 
 /********
@@ -138,56 +107,65 @@ static void parse_error()
  ********/
 static void match(token_class tc)
 {
-    if (tc == T_ID_DEC && tok.tc == T_IDENTIFIER) {
-        tok.tc = T_ID_DEC;
-    }
-    if (tc != tok.tc) {
-        parse_error();
-    }
     put_token();
     get_token();
 }
 
-/********
-    Scan source, identify structure, and print appropriately.
- ********/
 void parse(){
-  set_to_b`eginning(&loc);
+  set_to_beginning(&loc);
+  
+  do{
+    start_parse();
+  } while(tok.tc != T_EOF); //there's more stuff to parse!
+}
+
+void start_parse(){
+
   get_token();
   
   /* Calls the first non-termial */
-  parse_E();
+  E();
 }
 
 
 /* E -> T Etail */
-static void parse_E(){
-  parse_Ttail(parse_T()); 
+static void E(){
+  T();
+  Etail();
+  //parse_Etail(parse_T()); 
 }
 
 /* ETail -> W T Etail | epsilon */
-static void parse_Etail(){
+static void Etail(){
   
   switch (tok.tc) {
     
-  case MINUS: // <- Error
-    match(MINUS);
-    parse_Etail(parse_T());
+  case T_MINUS: // <- Error
+    match(T_MINUS);
+    T();
+    Etail();
+    //parse_Etail(parse_T());
     break;
     
-  case PLUS: // <- Error
-    match(PLUS);
-    parse_Etail(parse_T());
+  case T_PLUS: // <- Error
+    match(T_PLUS);
+    T();
+    Etail();
+    //parse_Etail(parse_T());
     break;
     
-  case PLUSPLUS: // <- CHECK HOW I DEFINED THEM
-    match(PLUSPLUS);
-    parse_Etail(parse_T());
+  case T_PLUSPLUS: // <- CHECK HOW I DEFINED THEM
+    match(T_PLUSPLUS);
+    T();
+    Etail();
+    //parse_Etail(parse_T());
     break;
     
-  case MINUSMINUS: // <- CHECK HOW I DEFINED THEM
-    match(MINUSMINUS);
-    parse_Etail(parse_T());
+  case T_MINUSMINUS: // <- CHECK HOW I DEFINED THEM
+    match(T_MINUSMINUS);
+    T();
+    Etail();
+    //parse_Etail(parse_T());
     break;
     
   default:
@@ -197,28 +175,36 @@ static void parse_Etail(){
 }
 
 /* T -> F Ttail */
-static void parse_T(){
-  parse_F(parse_Ttail());
+static void T(){
+  F();
+  Ttail();
+  //parse_Ttail(parse_F());
 }
 
 /* Ttail -> * F Ttail | / F Ttail | % F Ttail | epsilon */
-static void parse_Ttail(){
+static void Ttail(){
   
   switch (tok.tc) {
   
-  case STAR:
-    match(STAR);
-    parse_Ttail(parse_F());
+  case T_STAR:
+    match(T_STAR);
+    F();
+    Ttail();
+    //parse_Ttail(parse_F());
     break;
   
-  case SLASH:
-    match(SLASH);
-    parse_Ttail(parse_F());
+  case T_SLASH:
+    match(T_SLASH);
+    F();
+    Ttail();
+    //parse_Ttail(parse_F());
     break;
   
-  case PCT:
-    match(PCT);
-    parse_Ttail(parse_F());
+  case T_PCT:
+    match(T_PCT);
+    F();
+    Ttail();
+    //parse_Ttail(parse_F());
     break;
   
   default:
@@ -228,20 +214,23 @@ static void parse_Ttail(){
 }
 
 /* F -> ( E ) | num | epsilon */
-static void parse_F(){
+static void F(){
   
   switch (tok.tc) {
   
-  case LPAREN:
-    match(LPAREN);
-    parse_E();
-    match(RPAREN);
+  case T_LPAREN:
+    match(T_LPAREN);
+    E();
+    match(T_RPAREN);
     break;
 
-  case NUM:
-    match(NUM);
+  case T_NUM:
+    tok.num = atof(tok.data);
+    match(T_NUM);
     break;
-
+    //case T_SEMIC: //not actually needed. it's the only thing we actually accept as a token which has no evaluation, so it will stop recursion all the way
+    //do something
+    break;
   default:
     break;
   }
